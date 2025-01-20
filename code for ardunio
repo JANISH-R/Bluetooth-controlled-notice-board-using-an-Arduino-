@@ -1,0 +1,43 @@
+#include <LedControl.h>  // Library for MAX7219-based LED Matrix
+
+// Pin definitions for the MAX7219
+#define DATA_IN    11
+#define CLK         13
+#define LOAD        10
+#define MAX_DEVICES 1  // Number of 8x8 LED Matrix modules
+
+// Create an instance of the LedControl library
+LedControl lc = LedControl(DATA_IN, CLK, LOAD, MAX_DEVICES);
+
+// Bluetooth communication
+char receivedChar;  // Variable to store the received character
+
+void setup() {
+  Serial.begin(9600);  // Initialize serial communication with Bluetooth
+  // Initialize LED Matrix
+  for (int i = 0; i < MAX_DEVICES; i++) {
+    lc.shutdown(i, false);  // Wake up the display
+    lc.setIntensity(i, 8);   // Set brightness (0-15)
+    lc.clearDisplay(i);      // Clear the display
+  }
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    receivedChar = Serial.read();  // Read the Bluetooth data
+
+    // Check if received character is within ASCII printable range
+    if (receivedChar >= 32 && receivedChar <= 126) {
+      displayText(receivedChar);  // Display the character on the LED Matrix
+    }
+  }
+}
+
+void displayText(char text) {
+  for (int i = 0; i < MAX_DEVICES; i++) {
+    lc.clearDisplay(i);  // Clear the display before printing new text
+  }
+
+  // Display the received character
+  lc.setRow(0, 0, text);  // Display the character on row 0 of the LED matrix
+}
